@@ -23,6 +23,7 @@ class CHConfigManager:
     config = None
 
     def __init__(self, ch_config, config):
+        """Constructor"""
         self.ch_config = ch_config
         self.config = config
 
@@ -30,7 +31,7 @@ class CHConfigManager:
     def is_element_comment(element):
         """Check whether specified element is an XML comment
 
-        :param element: Element to check
+        :param element: Element instance to check
         :return: bool
         """
         return isinstance(element, lxml.etree._Comment)
@@ -43,7 +44,7 @@ class CHConfigManager:
         def on_cluster_root(remote_servers_element):
             """
             Add new cluster to the root of cluster specification
-            :param remote_servers_element:
+            :param remote_servers_element: <yandex/remote_servers> element. Ex.: <yandex><remote_servers>
             :return:
             """
             new_cluster_element = etree.Element(cluster_name)
@@ -58,10 +59,17 @@ class CHConfigManager:
         :return:
         """
         def on_cluster(cluster_element, cluster_element_index):
+            """
+            Handle each cluster element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element. Ex.: <yandex><remote_servers><mycluster>
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :return:
+            """
             if cluster_element.tag != cluster_name:
                 # this is not our cluster
                 return
             # this is our cluster, add shard
+            # <yandex/remote_servers/CLUSTER_NAME> - add <shard>
             new_shard_element = etree.Element('shard')
             cluster_element.append(new_shard_element)
 
@@ -69,7 +77,7 @@ class CHConfigManager:
 
     def add_replica(self, cluster_name, shard_index, host, port):
         """
-        Add new replica with host:port into cluster named cluster_name shard with index shard_index
+        Add new replica with host:port into cluster named cluster_name, shard with index shard_index
 
         :param cluster_name:
         :param shard_index:
@@ -78,6 +86,14 @@ class CHConfigManager:
         :return:
         """
         def on_shard(cluster_element, cluster_element_index, shard_element, shard_element_index):
+            """
+            Handle each shard element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :return:
+            """
             if cluster_element.tag != cluster_name:
                 # this is not our cluster
                 return
@@ -87,8 +103,13 @@ class CHConfigManager:
                 return
 
             # this is our cluster + shard, add replica
+            # <yandex/remote_servers/CLUSTER_NAME/shard> - add <replica>
             new_replica_element = etree.Element('replica')
 
+            # <replica>
+            #    <host>example01-01-2</host>
+            #    <port>9000</port>
+            # </replica>
             new_host_element = etree.Element('host')
             new_host_element.text = host
             new_port_element = etree.Element('port')
@@ -110,6 +131,12 @@ class CHConfigManager:
         :return:
         """
         def on_cluster(cluster_element, cluster_element_index):
+            """
+            Handle each cluster element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :return:
+            """
             if cluster_element.tag != cluster_name:
                 # this is not our cluster
                 return
@@ -126,6 +153,14 @@ class CHConfigManager:
         :return:
         """
         def on_shard(cluster_element, cluster_element_index, shard_element, shard_element_index):
+            """
+            Handle each shard element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :return:
+            """
             if cluster_element.tag != cluster_name:
                 # this is not our cluster
                 return
@@ -149,6 +184,16 @@ class CHConfigManager:
         :return:
         """
         def on_replica(cluster_element, cluster_element_index, shard_element, shard_element_index, replica_element, replica_element_index):
+            """
+            Handle each replica element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param replica_element: <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :param replica_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :return:
+            """
             if cluster_element.tag != cluster_name:
                 # this is not our cluster
                 return
@@ -168,22 +213,44 @@ class CHConfigManager:
         :return:
         """
         def on_cluster(cluster_element, cluster_element_index):
-            """Callback on_cluster"""
+            """
+            Handle each cluster element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :return:
+            """
             print()
             print(cluster_element.tag)
-            pass
 
         def on_shard(cluster_element, cluster_element_index, shard_element, shard_element_index):
-            """Callback on_shard"""
+            """
+            Handle each shard element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :return:
+            """
             print('  ' + shard_element.tag + '[' + str(shard_element_index) + ']')
-            pass
 
         def on_replica(cluster_element, cluster_element_index, shard_element, shard_element_index, replica_element, replica_element_index):
-            """Callback on_replica"""
+            """
+            Handle each replica element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param replica_element: <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :param replica_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :return:
+            """
+            # <replica>
+            #    <host>example01-01-2</host>
+            #    <port>9000</port>
+            # </replica>
             host_element = replica_element.find('host')
             port_element = replica_element.find('port')
             print("    " + replica_element.tag + '[' + str(replica_element_index) + "]|" + host_element.tag + ":" + host_element.text + ":" + port_element.tag + ":" + port_element.text + " path: " + cluster_element.tag + '/' + shard_element.tag + '[' + str(shard_element_index) + ']/' + replica_element.tag)
-            pass
 
         return self.walk_config(on_cluster=on_cluster, on_shard=on_shard, on_replica=on_replica)
 
@@ -194,10 +261,21 @@ class CHConfigManager:
         """
         def on_replica(cluster_element, cluster_element_index, shard_element, shard_element_index, replica_element, replica_element_index):
             """
-            Callback on_replica
             Accumulate all replica specifications
+            Handle each replica element
+            :param cluster_element: <yandex/remote_servers/CLUSTER_NAME> element
+            :param cluster_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME> element
+            :param shard_element: <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param shard_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard> element
+            :param replica_element: <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :param replica_element_index: 0-based index of <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
+            :return:
             """
             # extract host:port from child tags of <replica>
+            # <replica>
+            #    <host>example01-01-2</host>
+            #    <port>9000</port>
+            # </replica>
             host_element = replica_element.find('host')
             port_element = replica_element.find('port')
             print("    " + replica_element.tag + '[' + str(replica_element_index) + "]|" + host_element.tag + ":" + host_element.text + ":" + port_element.tag + ":" + port_element.text + " path: " + cluster_element.tag + '/' + shard_element.tag + '[' + str(shard_element_index) + ']/' + replica_element.tag)
@@ -240,18 +318,6 @@ class CHConfigManager:
         # remove temp file
         os.remove(tempfile_path)
 
-    # lxml.etree._Element
-    # def on_cluster(self, cluster_element):
-    #     print("cluster: " + cluster_element.tag)
-    #
-    # def on_shard(self, cluster_element, shard_element):
-    #     print("  shard: " + shard_element.tag + " path: " + cluster_element.tag + '/' + shard_element.tag)
-    #
-    # def on_replica(self, cluster_element, shard_element, replica_element):
-    #     host_element = replica_element.find('host')
-    #     port_element = replica_element.find('port')
-    #     print("    replica: " + replica_element.tag + "|" + host_element.tag + ":" + host_element.text + ":" + port_element.tag + ":" + port_element.text + " path: " + cluster_element.tag + '/' + shard_element.tag + '/' + replica_element.tag)
-
     def walk_config(
             self,
             on_cluster_root=None,
@@ -262,10 +328,10 @@ class CHConfigManager:
         """
         Walk over cluster configuration calling callback functions on-the-way
 
-        :param on_cluster_root:
-        :param on_cluster:
-        :param on_shard:
-        :param on_replica:
+        :param on_cluster_root: callback called on each (only one expected) <yandex/remote_servers> element
+        :param on_cluster: callback called on each <yandex/remote_servers/CLUSTER_NAME> element
+        :param on_shard: callback called on each <yandex/remote_servers/CLUSTER_NAME/shard> element
+        :param on_replica: callback called on each <yandex/remote_servers/CLUSTER_NAME/shard/replica> element
         :return:
         """
         try:
@@ -280,13 +346,12 @@ class CHConfigManager:
             print("SyntaxError")
             return
 
-
         # config_root = config_tree.getroot()
-        # '<remote_servers>'
+        # '<yandex/remote_servers>'
         remote_servers_element = config_tree.find('remote_servers')
 
         if remote_servers_element is None:
-            # no <remote_servers> tag available
+            # no <yandex/remote_servers> element available
             return
 
         # <remote_servers> found
@@ -294,7 +359,7 @@ class CHConfigManager:
         if callable(on_cluster_root):
             on_cluster_root(remote_servers_element)
 
-        # iterate over <remote_servers> children elements
+        # iterate over <yandex/remote_servers> children elements <yandex/remote_servers/CLUSTER_NAME>
         # each tag inside it would be name of the cluster. ex: <my_perfect_cluster></my_perfect_cluster>
 
         if not len(remote_servers_element):
@@ -309,7 +374,7 @@ class CHConfigManager:
             if self.is_element_comment(cluster_element):
                 continue
 
-            # normal element - cluster name <my_cool_cluster>
+            # normal element - <yandex/remote_servers/CLUSTER_NAME> - cluster name <my_perfect_cluster>
 
             if callable(on_cluster):
                 on_cluster(cluster_element, cluster_element_index)
@@ -328,6 +393,7 @@ class CHConfigManager:
                     continue
 
                 # normal element - <shard>
+                # < yandex/remote_servers/CLUSTER_NAME/shard>
                 if callable(on_shard):
                     on_shard(cluster_element, cluster_element_index, shard_element, shard_element_index)
 
@@ -345,6 +411,8 @@ class CHConfigManager:
                         continue
 
                     # normal element - <replica>
+                    # <yandex/remote_servers/CLUSTER_NAME/shard/replica>
+
                     if callable(on_replica):
                         on_replica(cluster_element, cluster_element_index, shard_element, shard_element_index, replica_element, replica_element_index)
 
